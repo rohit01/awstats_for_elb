@@ -1,4 +1,4 @@
-AWS ELB AWStats
-===============
+AWStats for AWS ELB
+===================
 
-AWStats based statistics for ELB access logs being pushed to S3. Automated deployment using Ansible.
+AWStats based statistics for ELB access logs (Dumped into S3 by ELB). Automated deployment using Ansible.
