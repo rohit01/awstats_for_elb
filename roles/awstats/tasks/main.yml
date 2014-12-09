@@ -1,0 +1,4 @@
+---
+- include: install_awstats.yml
+- include: sync_from_s3.yml
+- include: configure_apache.yml

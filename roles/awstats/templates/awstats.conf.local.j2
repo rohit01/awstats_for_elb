@@ -1,0 +1,15 @@
+# You can overrides config directives here.
+# This is particularly useful for users with several configs for
+# different virtual servers, who want to reuse common parameters.
+# Also, this file is not updated with each new upstream release.
+
+# dummy log file. Parameter is being passed as a command line argument
+LogFile="/dev/null"
+
+LogFormat = "%time5 %elb %host %host_port %host_r %host_r_port %request_processing_time %backend_processing_time %response_processing_time %code %backend_status_code %received_bytes %bytesd %methodurl"
+
+SiteDomain="{{ site_domain }}"
+
+HostAliases="{{ site_domain }} 127.0.0.1 localhost"
+
+DNSLookup=1

@@ -1,0 +1,46 @@
+---
+- name: "Install dependencies - using apt-get"
+  apt: >
+    name="{{ item }}"
+    state="present"
+    update_cache=yes
+    cache_valid_time="{{ apt_cache_time }}"
+  with_items:
+    - python-pip
+
+- name: "Install s3cmd -- using pip"
+  pip: name=s3cmd
+
+- name: "Copy template s3cmd config file"
+  template: >
+    src="s3cfg.j2"
+    dest="/root/.s3cfg"
+
+- name: "Create local directory for sync"
+  file: >
+    path="/mnt/{{ elb_bucket }}"
+    state="directory"
+
+- name: "Add cron task for syncing {{ elb_bucket }} ELB logs every hour"
+  cron: >
+    name="Sync log files from S3"
+    job="/usr/local/bin/s3cmd sync --no-check-md5 --skip-existing s3://{{ elb_bucket }}/ /mnt/{{ elb_bucket }}/"
+    minute="00"
+    hour="*"
+    user="root"
+    state="present"
+
+- name: "Copy log_format_cleanup.sh"
+  copy: >
+    src="log_format_cleanup.sh"
+    dest="/usr/local/log_format_cleanup.sh"
+    mode="0755"
+
+- name: "Add cron task - log format cleanup for AWStats"
+  cron: >
+    name="log format cleanup for AWStats"
+    job="/usr/local/log_format_cleanup.sh /mnt/{{ elb_bucket }}/"
+    minute="15"
+    hour="*"
+    user="root"
+    state="present"

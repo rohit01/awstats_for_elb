@@ -1,0 +1,60 @@
+---
+- name: "Install dependencies - using apt-get"
+  apt: >
+    name="{{ item }}"
+    state="present"
+    update_cache=yes
+    cache_valid_time="{{ apt_cache_time }}"
+  with_items:
+    - perl
+
+- name: "Copy {{awstats_version}}.tar.gz"
+  copy: >
+    src="{{awstats_version}}.tar.gz"
+    dest="/usr/src/{{awstats_version}}.tar.gz"
+
+- name: "Extract source from {{awstats_version}}.tar.gz"
+  shell: "tar xzf {{awstats_version}}.tar.gz -C /usr/local/"
+  args:
+    chdir: "/usr/src/"
+    creates: "/usr/local/{{awstats_version}}"
+
+- name: "create softlink - /usr/local/awstats"
+  file: >
+    src="/usr/local/{{awstats_version}}"
+    dest="/usr/local/awstats"
+    state="link"
+    force=yes
+
+- name: "create awstats directories - /var/lib/awstats"
+  file: >
+    path="{{ item }}"
+    state="directory"
+  with_items:
+    - "/var/lib/awstats"
+    - "/etc/awstats"
+
+- name: "Copy awstats.conf configuration file"
+  copy: >
+    src="awstats.conf"
+    dest="/etc/awstats/awstats.conf"
+
+- name: "Copy awstats.conf.local configuration file using template"
+  template: >
+    src="awstats.conf.local.j2"
+    dest="/etc/awstats/awstats.conf.local"
+
+- name: "Copy update_awstats_db.sh"
+  copy: >
+    src="update_awstats_db.sh"
+    dest="/usr/local/update_awstats_db.sh"
+    mode="0755"
+
+- name: "Add cron task for updating awstats data every hour"
+  cron: >
+    name="Analyse log files for Awstats"
+    job="/usr/local/update_awstats_db.sh /mnt/{{ elb_bucket }}/ {{ site_domain }}"
+    minute="55"
+    hour="*"
+    user="root"
+    state="present"

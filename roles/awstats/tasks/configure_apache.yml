@@ -1,0 +1,53 @@
+---
+- name: "Install dependencies - using apt-get"
+  apt: >
+    name="{{ item }}"
+    state="present"
+    update_cache=yes
+    cache_valid_time="{{ apt_cache_time }}"
+  with_items:
+    - apache2
+    - libnet-xwhois-perl
+    - libapache2-mod-perl2
+    - python-passlib
+
+- name: "Enable apache cgi modules"
+  file: >
+    src="/etc/apache2/mods-available/{{ item }}"
+    dest="/etc/apache2/mods-enabled/{{ item }}"
+    state="link"
+  notify: restart apache
+  with_items:
+    - "cgid.conf"
+    - "cgid.load"
+    - "cgi.load"
+
+- name: "Copy apache configuration for awstats"
+  copy: >
+    src="awstats-apache.conf"
+    dest="/etc/apache2/conf-available/awstats-apache.conf"
+  notify: restart apache
+
+- name: "Enable awstats in apache"
+  file: >
+    src="/etc/apache2/conf-available/awstats-apache.conf"
+    dest="/etc/apache2/conf-enabled/awstats-apache.conf"
+    state="link"
+  notify: restart apache
+
+- name: "create directory - /etc/awstats"
+  file: >
+    path="/etc/awstats"
+    state="directory"
+
+- name: "Create AWStats users"
+  htpasswd: >
+    path="/etc/awstats/htpasswd.users"
+    name="{{ item.key }}"
+    password="{{ item.value }}"
+    state=present
+  notify: restart apache
+  with_dict: awstats_users
+
+- name: "Ensure apache is enabled and started"
+  service: name=apache2 state=started enabled=yes

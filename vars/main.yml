@@ -1,0 +1,17 @@
+# 2592000 seconds = 30 days
+apt_cache_time: 2592000
+
+# OS distribution variable
+is_centos: "'{{ ansible_distribution|lower }}' == 'centos'"
+is_redhat: "'{{ ansible_distribution|lower }}' == 'redhat'"
+is_debian: "'{{ ansible_distribution|lower }}' == 'debian'"
+is_ubuntu: "'{{ ansible_distribution|lower }}' == 'ubuntu'"
+
+elb_bucket: "<S3 Bucket name>"
+aws_access_key: "<aws_access_key>"
+aws_secret_key: "<aws_secret_key>"
+site_domain: "<website domain>"
+
+awstats_version: "awstats-7.4"
+awstats_users: 
+  "admin": "admin"
